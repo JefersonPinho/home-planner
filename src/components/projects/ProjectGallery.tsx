@@ -7,6 +7,14 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { useForm } from "react-hook-form";
 import { Copy, Pencil, Trash2 } from "lucide-react";
 import { Dialog } from "@/components/ui/Dialog";
+import {
+  createBrowserProject,
+  deleteBrowserProject,
+  duplicateBrowserProject,
+  listBrowserProjects,
+  mergeProjectLists,
+  updateBrowserProject,
+} from "@/lib/browser-projects";
 import { createProjectSchema, renameProjectSchema } from "@/lib/validation/scene";
 import type { ProjectSummary } from "@/types/scene";
 
@@ -31,25 +39,19 @@ export function ProjectGallery({
   const [error, setError] = useState("");
 
   const load = async () => {
-    const response = await fetch("/api/projects");
-    if (!response.ok) {
-      setError("Não foi possível carregar os projetos.");
-      return;
-    }
-    const body = (await response.json()) as ListResponse;
-    setProjects(body.projects);
-    setStorage(body.storage);
-    setError("");
+    const next = await readGallery();
+    setProjects(next.projects);
+    if (next.storage) setStorage(next.storage);
+    setError(next.storage || next.projects.length > 0 ? "" : "Não foi possível carregar os projetos.");
   };
 
   useEffect(() => {
     let active = true;
     void (async () => {
-      const response = await fetch("/api/projects");
-      if (!active || !response.ok) return;
-      const body = (await response.json()) as ListResponse;
-      setProjects(body.projects);
-      setStorage(body.storage);
+      const next = await readGallery();
+      if (!active) return;
+      setProjects(next.projects);
+      if (next.storage) setStorage(next.storage);
       setError("");
     })();
     return () => {
@@ -59,16 +61,17 @@ export function ProjectGallery({
 
   const duplicate = async (id: string) => {
     const response = await fetch(`/api/projects/${id}/duplicate`, { method: "POST" });
-    if (!response.ok) return;
+    if (!response.ok) duplicateBrowserProject(id);
     await load();
   };
 
   const toggleTemplate = async (project: ProjectSummary) => {
-    await fetch(`/api/projects/${project.id}`, {
+    const response = await fetch(`/api/projects/${project.id}`, {
       method: "PATCH",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ isTemplate: !project.isTemplate }),
     });
+    if (!response.ok) updateBrowserProject(project.id, { isTemplate: !project.isTemplate });
     await load();
   };
 
@@ -162,6 +165,7 @@ export function ProjectGallery({
               className="h-8 bg-red-700 px-3 text-sm text-white"
               onClick={async () => {
                 await fetch(`/api/projects/${removing.id}`, { method: "DELETE" });
+                deleteBrowserProject(removing.id);
                 setRemoving(null);
                 await load();
               }}
@@ -173,6 +177,25 @@ export function ProjectGallery({
       ) : null}
     </main>
   );
+}
+
+async function readGallery(): Promise<{ projects: ProjectSummary[]; storage: ListResponse["storage"] | null }> {
+  try {
+    const response = await fetch("/api/projects");
+    if (!response.ok) return { projects: listBrowserProjects(), storage: null };
+    const body = (await response.json()) as ListResponse;
+    return { projects: mergeProjectLists(body.projects, listBrowserProjects()), storage: body.storage };
+  } catch {
+    return { projects: listBrowserProjects(), storage: null };
+  }
+}
+
+function openLocal(name: string, onCreated: (id: string) => void, onError: () => void) {
+  try {
+    onCreated(createBrowserProject(name).id);
+  } catch {
+    onError();
+  }
 }
 
 function CreateDialog({ onClose, onCreated }: { onClose: () => void; onCreated: (id: string) => void }) {
@@ -202,16 +225,20 @@ function CreateDialog({ onClose, onCreated }: { onClose: () => void; onCreated: 
           })
             .then(async (response) => {
               if (!response.ok) {
-                setError("Não foi possível criar o projeto.");
-                setPending(false);
+                openLocal(parsed.data.name, onCreated, () => {
+                  setError("Não foi possível criar o projeto.");
+                  setPending(false);
+                });
                 return;
               }
               const body = (await response.json()) as { project: { id: string } };
               onCreated(body.project.id);
             })
             .catch(() => {
-              setError("Não foi possível criar o projeto.");
-              setPending(false);
+              openLocal(parsed.data.name, onCreated, () => {
+                setError("Não foi possível criar o projeto.");
+                setPending(false);
+              });
             });
         }}
       >
@@ -250,7 +277,7 @@ function RenameDialog({ project, onClose, onSaved }: { project: ProjectSummary; 
             headers: { "content-type": "application/json" },
             body: JSON.stringify(values),
           });
-          if (response.ok) onSaved();
+          if (response.ok || updateBrowserProject(project.id, { name: values.name })) onSaved();
         })}
       >
         <input className="h-9 border border-neutral-300 px-2 text-sm outline-none focus:border-neutral-900" {...form.register("name")} />

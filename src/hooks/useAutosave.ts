@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import { updateBrowserProject } from "@/lib/browser-projects";
 import { renderThumbnail } from "@/lib/thumbnail";
 import { useEditorStore } from "@/stores/editor-store";
 import { useProjectStore } from "@/stores/project-store";
@@ -21,12 +22,13 @@ export async function saveProject(): Promise<void> {
   useEditorStore.getState().setSaveStatus("saving");
   try {
     const thumbnail = renderThumbnail(state.document);
+    const payload = { document: state.document, thumbnail, revision };
     const response = await fetch(`/api/projects/${projectId}`, {
       method: "PATCH",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ document: state.document, thumbnail, revision }),
+      body: JSON.stringify(payload),
     });
-    if (!response.ok) throw new Error("save");
+    if (!response.ok && !updateBrowserProject(projectId, payload)) throw new Error("save");
     const latest = useProjectStore.getState();
     if (latest.revision === revision) latest.markClean();
     useEditorStore.getState().setSaveStatus("saved");
@@ -45,10 +47,12 @@ export function flushProjectSave(): void {
   const state = useProjectStore.getState();
   if (!state.loaded || !state.projectId || !state.dirty) return;
   const thumbnail = renderThumbnail(state.document);
+  const payload = { document: state.document, thumbnail, revision: state.revision };
+  updateBrowserProject(state.projectId, payload);
   void fetch(`/api/projects/${state.projectId}`, {
     method: "PATCH",
     headers: { "content-type": "application/json" },
-    body: JSON.stringify({ document: state.document, thumbnail, revision: state.revision }),
+    body: JSON.stringify(payload),
     keepalive: true,
   });
 }

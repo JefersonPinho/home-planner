@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Check, Focus, LoaderCircle, Redo2, Scan, Undo2 } from "lucide-react";
 import { enterDollhouse, focusSelection, frameProject } from "@/features/editor/actions";
+import { updateBrowserProject } from "@/lib/browser-projects";
 import { useEditorStore } from "@/stores/editor-store";
 import { useProjectStore } from "@/stores/project-store";
 import type { ViewPreset } from "@/types/editor";
@@ -30,11 +31,12 @@ export function TopBar() {
     const next = value.trim();
     if (!next || !projectId) return;
     useProjectStore.getState().setName(next);
-    await fetch(`/api/projects/${projectId}`, {
+    const response = await fetch(`/api/projects/${projectId}`, {
       method: "PATCH",
       headers: { "content-type": "application/json" },
       body: JSON.stringify({ name: next }),
     });
+    if (!response.ok) updateBrowserProject(projectId, { name: next });
   };
 
   return (

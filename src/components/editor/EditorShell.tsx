@@ -11,6 +11,7 @@ import { MobileBar } from "@/components/toolbar/MobileBar";
 import { ToolRail } from "@/components/toolbar/ToolRail";
 import { TopBar } from "@/components/toolbar/TopBar";
 import { flushProjectSave, useAutosave } from "@/hooks/useAutosave";
+import { getBrowserProject } from "@/lib/browser-projects";
 import { useEditorHotkeys } from "@/hooks/useEditorHotkeys";
 import { presentRooms } from "@/features/rooms/present";
 import { formatArea, formatMeters } from "@/lib/format";
@@ -38,12 +39,13 @@ export function EditorShell({ projectId }: { projectId: string }) {
     useProjectStore.getState().reset();
     void (async () => {
       const response = await fetch(`/api/projects/${projectId}`);
-      if (!response.ok) {
+      const serverProject = response.ok ? ((await response.json()) as { project: ProjectRecord }).project : null;
+      const project = serverProject ?? getBrowserProject(projectId);
+      if (!project) {
         if (!cancelled) setError("Não foi possível abrir este projeto.");
         return;
       }
-      const body = (await response.json()) as { project: ProjectRecord };
-      if (!cancelled) useProjectStore.getState().load(body.project);
+      if (!cancelled) useProjectStore.getState().load(project);
     })();
     void useCustomFurnitureStore.getState().refresh();
     return () => {
