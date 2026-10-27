@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -41,6 +41,21 @@ export function ProjectGallery({
     setStorage(body.storage);
     setError("");
   };
+
+  useEffect(() => {
+    let active = true;
+    void (async () => {
+      const response = await fetch("/api/projects");
+      if (!active || !response.ok) return;
+      const body = (await response.json()) as ListResponse;
+      setProjects(body.projects);
+      setStorage(body.storage);
+      setError("");
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
 
   const duplicate = async (id: string) => {
     const response = await fetch(`/api/projects/${id}/duplicate`, { method: "POST" });
@@ -161,29 +176,59 @@ export function ProjectGallery({
 }
 
 function CreateDialog({ onClose, onCreated }: { onClose: () => void; onCreated: (id: string) => void }) {
-  const form = useForm<{ name: string }>({
-    resolver: zodResolver(createProjectSchema),
-    defaultValues: { name: "Minha Casa" },
-  });
+  const [name, setName] = useState("Minha Casa");
+  const [error, setError] = useState("");
+  const [pending, setPending] = useState(false);
+
   return (
     <Dialog title="Novo projeto" onClose={onClose}>
       <form
         className="flex flex-col gap-3"
-        onSubmit={form.handleSubmit(async (values) => {
-          const response = await fetch("/api/projects", {
+        method="post"
+        action="/api/projects"
+        onSubmit={(event) => {
+          event.preventDefault();
+          const parsed = createProjectSchema.safeParse({ name });
+          if (!parsed.success) {
+            setError(parsed.error.issues[0]?.message ?? "Informe um nome.");
+            return;
+          }
+          setPending(true);
+          setError("");
+          void fetch("/api/projects", {
             method: "POST",
             headers: { "content-type": "application/json" },
-            body: JSON.stringify(values),
-          });
-          if (!response.ok) return;
-          const body = (await response.json()) as { project: { id: string } };
-          onCreated(body.project.id);
-        })}
+            body: JSON.stringify(parsed.data),
+          })
+            .then(async (response) => {
+              if (!response.ok) {
+                setError("Não foi possível criar o projeto.");
+                setPending(false);
+                return;
+              }
+              const body = (await response.json()) as { project: { id: string } };
+              onCreated(body.project.id);
+            })
+            .catch(() => {
+              setError("Não foi possível criar o projeto.");
+              setPending(false);
+            });
+        }}
       >
-        <input className="h-9 border border-neutral-300 px-2 text-sm outline-none focus:border-neutral-900" {...form.register("name")} />
-        {form.formState.errors.name ? <p className="text-[12px] text-red-700">{form.formState.errors.name.message}</p> : null}
-        <button type="submit" className="h-9 bg-neutral-900 text-sm text-white" disabled={form.formState.isSubmitting}>
-          Criar
+        <input
+          name="name"
+          value={name}
+          onChange={(event) => setName(event.target.value)}
+          className="h-9 border border-neutral-300 px-2 text-sm outline-none focus:border-neutral-900"
+        />
+        {error ? <p className="text-[12px] text-red-700">{error}</p> : null}
+        <button
+          type="submit"
+          className="h-9 bg-neutral-900 text-sm text-white disabled:opacity-60"
+          disabled={pending}
+          onMouseDown={(event) => event.preventDefault()}
+        >
+          {pending ? "Criando…" : "Criar"}
         </button>
       </form>
     </Dialog>

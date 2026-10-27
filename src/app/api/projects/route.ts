@@ -11,12 +11,18 @@ export async function GET() {
 }
 
 export async function POST(request: Request) {
-  const body: unknown = await request.json().catch(() => null);
-  const parsed = createProjectSchema.safeParse(body);
+  const contentType = request.headers.get("content-type") ?? "";
+  const formPost = !contentType.includes("application/json");
+  const payload: unknown = formPost
+    ? { name: String((await request.formData()).get("name") ?? "") }
+    : await request.json().catch(() => null);
+  const parsed = createProjectSchema.safeParse(payload);
   if (!parsed.success) {
+    if (formPost) return NextResponse.redirect(new URL("/", request.url), 303);
     return NextResponse.json({ error: "Informe um nome para o projeto." }, { status: 400 });
   }
   const repository = await getRepository();
   const project = await repository.createProject(parsed.data.name);
+  if (formPost) return NextResponse.redirect(new URL(`/editor/${project.id}`, request.url), 303);
   return NextResponse.json({ project });
 }
