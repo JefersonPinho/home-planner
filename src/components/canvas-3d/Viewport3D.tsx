@@ -58,19 +58,21 @@ export function Viewport3D() {
           position={[0, 0, 0]}
           receiveShadow
           onClick={(event) => {
-            if (tryPlaceSpawn(event.point.x, event.point.z)) event.stopPropagation();
+            if (tryPlaceSpawn(event.point.x, -event.point.z)) event.stopPropagation();
           }}
         >
           <planeGeometry args={[80, 80]} />
           <meshStandardMaterial color="#eceae6" roughness={1} />
         </mesh>
         {walking ? null : <gridHelper args={[40, 40, "#d5d0c8", "#e4e0d8"]} position={[0, 0.006, 0]} />}
-        <RoomFloors />
-        <Walls />
-        <Suspense fallback={null}>
-          <Furniture />
-        </Suspense>
-        <Roof />
+        <group scale={[1, 1, -1]}>
+          <RoomFloors />
+          <Walls />
+          <Suspense fallback={null}>
+            <Furniture />
+          </Suspense>
+          <Roof />
+        </group>
         <OrbitControls
           ref={controls}
           makeDefault

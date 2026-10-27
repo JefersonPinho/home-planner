@@ -34,7 +34,7 @@ function RoomFloor({ room }: { room: PresentedRoom }) {
       receiveShadow
       onClick={(event) => {
         event.stopPropagation();
-        if (tryPlaceSpawn(event.point.x, event.point.z)) return;
+        if (tryPlaceSpawn(event.point.x, -event.point.z)) return;
         if (useEditorStore.getState().mode === "walk") return;
         useEditorStore.getState().setSelection({ type: "room", id: room.id });
       }}

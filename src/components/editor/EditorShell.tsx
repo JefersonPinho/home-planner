@@ -77,24 +77,24 @@ export function EditorShell({ projectId }: { projectId: string }) {
       <div className="flex min-h-0 flex-1">
         {walking ? null : <ToolRail />}
         {!walking && libraryOpen ? (
-          <div className="hidden md:block">
+          <div className="hidden h-full w-[300px] shrink-0 xl:block">
             <LibraryPanel />
           </div>
         ) : null}
-        <div className="relative min-w-0 flex-1">
+        <div className="relative min-h-0 min-w-0 flex-1">
           {mode === "2d" ? <PlanCanvas /> : <Viewport3D />}
           {walking ? null : <ViewCube />}
           {walking ? null : <SelectionStrip />}
           <WalkChrome />
         </div>
         {walking ? null : (
-          <div className="hidden md:block">
+          <div className="hidden h-full w-[280px] shrink-0 xl:block">
             <PropertiesPanel />
           </div>
         )}
       </div>
       {!walking && (sheet === "library" || sheet === "properties") ? (
-        <div className="fixed inset-x-0 bottom-16 z-30 max-h-[72dvh] overflow-hidden border-t border-neutral-200 bg-white md:hidden">
+        <div className="fixed inset-x-0 bottom-16 z-30 max-h-[min(72dvh,100%)] overflow-y-auto border-t border-neutral-200 bg-white md:bottom-0 xl:hidden">
           {sheet === "library" ? <LibraryPanel onClose={() => useEditorStore.getState().setMobileSheet(null)} /> : <PropertiesPanel />}
         </div>
       ) : null}

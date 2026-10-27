@@ -84,7 +84,8 @@ export function findSpawn(document: SceneDocument, doorAngles: ReadonlyMap<strin
 }
 
 export function forwardYaw(from: Vec2, toward: Vec2): number {
-  return Math.atan2(-(toward.x - from.x), -(toward.y - from.y));
+  // World -Z is plan +Y, and yaw 0 looks along world -Z.
+  return Math.atan2(-(toward.x - from.x), toward.y - from.y);
 }
 
 function clearestPoint(area: Vec2[], polygons: Vec2[][]): Vec2 | null {

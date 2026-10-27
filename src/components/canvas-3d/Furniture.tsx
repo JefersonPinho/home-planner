@@ -114,7 +114,7 @@ function FurniturePiece({ item, selected, colliding }: { item: FurnitureInstance
     if (!point) return;
     useEditorStore.getState().setSelection({ type: "furniture", id: item.id });
     gesture.current = { x: item.x, z: item.y, rotation: item.rotation, dragging: false };
-    drag.current = { pointerId: event.pointerId, offsetX: item.x - point.x, offsetZ: item.y - point.z };
+    drag.current = { pointerId: event.pointerId, offsetX: item.x - point.x, offsetZ: item.y + point.z };
     setOrbit(false);
     useProjectStore.getState().beginGesture();
     const pointer = event.target as PointerCaptureTarget | null;
@@ -131,7 +131,7 @@ function FurniturePiece({ item, selected, colliding }: { item: FurnitureInstance
     event.stopPropagation();
     const point = event.ray.intersectPlane(FLOOR, FLOOR_HIT);
     if (!point) return;
-    applyPose(point.x + current.offsetX, point.z + current.offsetZ, gesture.current.rotation, false);
+    applyPose(point.x + current.offsetX, -point.z + current.offsetZ, gesture.current.rotation, false);
   };
 
   const onFloorUp = (event: ThreeEvent<PointerEvent>) => {

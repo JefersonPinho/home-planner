@@ -40,7 +40,7 @@ export function PropertiesPanel() {
   const warnings = furniture ? (furnitureCollisions(document)[furniture.id] ?? []) : [];
 
   return (
-    <aside className="flex h-full w-full flex-col overflow-y-auto border-neutral-200 bg-white md:w-[300px] md:border-l">
+    <aside className="flex h-full w-full min-w-0 flex-col overflow-x-hidden overflow-y-auto border-neutral-200 bg-white xl:w-[280px] xl:border-l">
       <div className="border-b border-neutral-200 px-3 py-2 text-[11px] font-medium tracking-wide text-neutral-500 uppercase">
         Propriedades
       </div>
@@ -316,10 +316,10 @@ function ProjectSettings() {
   return (
     <section className="flex flex-col gap-2 border-t border-neutral-200 pt-3">
       <h3 className="text-sm font-medium">Projeto</h3>
-      <label className="grid grid-cols-[92px_1fr] items-center gap-2 text-[13px]">
+      <label className="grid min-w-0 grid-cols-[minmax(0,5.5rem)_minmax(0,1fr)] items-center gap-2 text-[13px]">
         <span className="text-neutral-500">Grade</span>
         <select
-          className="h-8 border border-neutral-300 bg-white px-2"
+          className="h-8 min-w-0 border border-neutral-300 bg-white px-2"
           value={settings.gridSize}
           onChange={(event) =>
             update((document) => {
@@ -369,10 +369,10 @@ function ProjectSettings() {
           })
         }
       />
-      <label className="grid grid-cols-[92px_1fr] items-center gap-2 text-[13px]">
+      <label className="grid min-w-0 grid-cols-[minmax(0,5.5rem)_minmax(0,1fr)] items-center gap-2 text-[13px]">
         <span className="text-neutral-500">Paredes</span>
         <select
-          className="h-8 border border-neutral-300 bg-white px-2"
+          className="h-8 min-w-0 border border-neutral-300 bg-white px-2"
           value={settings.wallMode}
           onChange={(event) =>
             update((document) => {

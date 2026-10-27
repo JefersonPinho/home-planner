@@ -73,7 +73,7 @@ function WallMesh({
     const normalZ = Math.cos(angle);
     const midX = (wall.a.x + wall.b.x) / 2;
     const midZ = (wall.a.y + wall.b.y) / 2;
-    const facing = normalX * (camera.position.x - midX) + normalZ * (camera.position.z - midZ);
+    const facing = normalX * (camera.position.x - midX) + normalZ * (-camera.position.z - midZ);
     const hidden = facing > 0.2;
     current.opacity = hidden ? 0.14 : 1;
     current.transparent = hidden;

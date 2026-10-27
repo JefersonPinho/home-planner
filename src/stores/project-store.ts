@@ -51,7 +51,7 @@ export const useProjectStore = create<ProjectState>((set, get) => ({
       future: [],
       gesture: null,
       dirty: false,
-      revision: 0,
+      revision: project.clientRevision ?? 0,
       loaded: true,
     }),
   setName: (name) => set({ projectName: name }),

@@ -37,11 +37,11 @@ export function NumberField({
   };
 
   return (
-    <label className="grid grid-cols-[92px_1fr_auto] items-center gap-2 text-[13px]">
-      <span className="text-neutral-500">{label}</span>
+    <label className="grid min-w-0 grid-cols-[minmax(0,5.5rem)_minmax(0,1fr)_auto] items-center gap-2 text-[13px]">
+      <span className="truncate text-neutral-500">{label}</span>
       <input
         inputMode="decimal"
-        className="h-8 border border-neutral-300 bg-white px-2 text-right outline-none focus:border-neutral-900"
+        className="h-8 min-w-0 border border-neutral-300 bg-white px-2 text-right outline-none focus:border-neutral-900"
         value={text}
         onFocus={() => {
           focused.current = true;

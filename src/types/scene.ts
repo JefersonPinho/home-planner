@@ -117,6 +117,7 @@ export type ProjectRecord = {
   thumbnail: string | null;
   document: SceneDocument;
   isTemplate: boolean;
+  clientRevision: number;
   createdAt: string;
   updatedAt: string;
 };

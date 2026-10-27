@@ -139,7 +139,7 @@ export function WalkController() {
     const running = walkInput.run || walkInput.keys.has("ShiftLeft") || walkInput.keys.has("ShiftRight");
     const speed = running ? RUN_SPEED : WALK_SPEED;
     const desiredX = (fx * forward + Math.cos(yaw) * strafe) * speed;
-    const desiredZ = (fz * forward - Math.sin(yaw) * strafe) * speed;
+    const desiredZ = (-fz * forward + Math.sin(yaw) * strafe) * speed;
     const blend = 1 - Math.exp(-14 * dt);
     velocity.current.x += (desiredX - velocity.current.x) * blend;
     velocity.current.z += (desiredZ - velocity.current.z) * blend;
@@ -159,7 +159,7 @@ export function WalkController() {
     camera.rotation.order = "YXZ";
     camera.rotation.y = walkInput.yaw;
     camera.rotation.x = walkInput.pitch;
-    camera.position.set(walkInput.x, EYE_HEIGHT, walkInput.z);
+    camera.position.set(walkInput.x, EYE_HEIGHT, -walkInput.z);
 
     const doors = scene.openings.flatMap((opening) => {
       if (opening.kind !== "door") return [];

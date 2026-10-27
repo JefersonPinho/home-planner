@@ -11,7 +11,8 @@ export function applyCamera(
   viewport: { width: number; height: number },
 ): void {
   const centerX = (bounds.minX + bounds.maxX) / 2;
-  const centerZ = (bounds.minY + bounds.maxY) / 2;
+  // The house group is mirrored on Z, so a plan point y lives at world z = -y.
+  const centerZ = -((bounds.minY + bounds.maxY) / 2);
   const spanX = Math.max(bounds.maxX - bounds.minX, 2);
   const spanZ = Math.max(bounds.maxY - bounds.minY, 2);
   const height = Math.max(bounds.maxHeight, 2.4);
@@ -22,6 +23,8 @@ export function applyCamera(
   const distance = Math.max(fit(spanX) / aspect, fit(spanZ), fit(height), 3.2) * (preset === "top" ? 1.08 : 1.28);
   const target = new THREE.Vector3(centerX, preset === "top" ? 0.02 : Math.min(height * 0.42, 1.4), centerZ);
   const position = new THREE.Vector3();
+  // A camera just on the +Z side of the target, with Y-up, puts world -Z at the top
+  // of the screen. That is plan +Y, the same direction the 2D plan draws upward.
   if (preset === "top") position.set(centerX, distance, centerZ + distance * 0.012);
   else if (preset === "front") position.set(centerX, height * 0.62, centerZ + distance);
   else if (preset === "back") position.set(centerX, height * 0.62, centerZ - distance);

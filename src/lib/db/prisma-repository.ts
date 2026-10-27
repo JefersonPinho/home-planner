@@ -25,6 +25,7 @@ function toRecord(project: {
   thumbnail: string | null;
   document: unknown;
   isTemplate: boolean;
+  clientRevision: number;
   createdAt: Date;
   updatedAt: Date;
 }): ProjectRecord {
@@ -34,6 +35,7 @@ function toRecord(project: {
     thumbnail: project.thumbnail,
     document: sceneDocumentSchema.parse(project.document),
     isTemplate: project.isTemplate,
+    clientRevision: project.clientRevision,
     createdAt: project.createdAt.toISOString(),
     updatedAt: project.updatedAt.toISOString(),
   };

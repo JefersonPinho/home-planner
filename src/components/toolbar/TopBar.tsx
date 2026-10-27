@@ -40,7 +40,7 @@ export function TopBar() {
   };
 
   return (
-    <header className="flex h-11 shrink-0 items-center gap-2 border-b border-neutral-200 bg-white px-2">
+    <header className="flex h-11 shrink-0 items-center gap-1 overflow-x-auto border-b border-neutral-200 bg-white px-2 sm:gap-2">
       <Link href="/" className="hidden h-8 items-center px-2 text-sm font-semibold tracking-tight sm:flex" aria-label="Meus projetos">
         Planta
       </Link>

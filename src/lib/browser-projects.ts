@@ -44,6 +44,7 @@ function toRecord(project: StoredProject): ProjectRecord {
     thumbnail: project.thumbnail,
     document: project.document,
     isTemplate: project.isTemplate,
+    clientRevision: project.clientRevision ?? 0,
     createdAt: project.createdAt,
     updatedAt: project.updatedAt,
   };

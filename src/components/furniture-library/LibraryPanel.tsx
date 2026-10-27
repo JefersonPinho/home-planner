@@ -20,7 +20,7 @@ export function LibraryPanel({ onClose }: { onClose?: () => void }) {
     : catalogByCategory(category);
 
   return (
-    <aside className="flex h-full w-full flex-col border-neutral-200 bg-white md:w-[320px] md:border-r">
+    <aside className="flex h-full w-full min-w-0 flex-col border-neutral-200 bg-white xl:w-[300px] xl:border-r">
       <div className="flex items-center justify-between border-b border-neutral-200 px-3 py-2">
         <span className="text-[11px] font-medium tracking-wide text-neutral-500 uppercase">Biblioteca</span>
         {onClose ? (

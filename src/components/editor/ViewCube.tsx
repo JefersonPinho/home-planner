@@ -35,7 +35,7 @@ export function ViewCube() {
           <button
             key={cell.id}
             type="button"
-            className={`h-7 w-11 text-[10px] font-medium tracking-wide ${mode === "3d" && preset === cell.id ? "bg-neutral-900 text-white" : "bg-white text-neutral-600 hover:bg-neutral-50"}`}
+            className={`h-6 w-8 text-[9px] font-medium tracking-wide sm:h-7 sm:w-11 sm:text-[10px] ${mode === "3d" && preset === cell.id ? "bg-neutral-900 text-white" : "bg-white text-neutral-600 hover:bg-neutral-50"}`}
             onClick={() => choose(cell.id)}
           >
             {cell.label}
