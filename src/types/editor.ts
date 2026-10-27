@@ -2,7 +2,7 @@ import type { Vec2 } from "@/types/scene";
 
 export type Tool = "select" | "wall" | "door" | "window" | "measure" | "pan";
 
-export type EditorMode = "2d" | "3d";
+export type EditorMode = "2d" | "3d" | "walk";
 
 export type Selection =
   | { type: "wall"; id: string }

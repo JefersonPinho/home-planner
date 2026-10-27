@@ -8,11 +8,14 @@ import type { OrbitControls as OrbitControlsImpl } from "three-stdlib";
 import { CameraRig } from "@/components/canvas-3d/CameraRig";
 import { Furniture } from "@/components/canvas-3d/Furniture";
 import { RoomFloors, Roof } from "@/components/canvas-3d/SceneExtras";
+import { WalkController } from "@/components/canvas-3d/WalkController";
 import { Walls } from "@/components/canvas-3d/Walls";
+import { tryPlaceSpawn } from "@/features/walk/enter";
 import { useEditorStore } from "@/stores/editor-store";
 
 export function Viewport3D() {
   const controls = useRef<OrbitControlsImpl>(null);
+  const walking = useEditorStore((state) => state.mode === "walk");
   const coarse = typeof window !== "undefined" && window.matchMedia("(pointer: coarse)").matches;
   useEffect(() => {
     const frame = window.requestAnimationFrame(() => window.dispatchEvent(new Event("resize")));
@@ -28,7 +31,9 @@ export function Viewport3D() {
         onCreated={({ gl }) => {
           gl.shadowMap.type = VSMShadowMap;
         }}
-        onPointerMissed={() => useEditorStore.getState().setSelection(null)}
+        onPointerMissed={() => {
+          if (useEditorStore.getState().mode !== "walk") useEditorStore.getState().setSelection(null);
+        }}
       >
         <color attach="background" args={["#e6e4e0"]} />
         <hemisphereLight args={["#f7f4ef", "#cfc6ba", 0.72]} />
@@ -48,11 +53,18 @@ export function Viewport3D() {
           shadow-camera-top={16}
           shadow-camera-bottom={-16}
         />
-        <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, 0, 0]} receiveShadow>
+        <mesh
+          rotation={[-Math.PI / 2, 0, 0]}
+          position={[0, 0, 0]}
+          receiveShadow
+          onClick={(event) => {
+            if (tryPlaceSpawn(event.point.x, event.point.z)) event.stopPropagation();
+          }}
+        >
           <planeGeometry args={[80, 80]} />
           <meshStandardMaterial color="#eceae6" roughness={1} />
         </mesh>
-        <gridHelper args={[40, 40, "#d5d0c8", "#e4e0d8"]} position={[0, 0.006, 0]} />
+        {walking ? null : <gridHelper args={[40, 40, "#d5d0c8", "#e4e0d8"]} position={[0, 0.006, 0]} />}
         <RoomFloors />
         <Walls />
         <Suspense fallback={null}>
@@ -62,6 +74,7 @@ export function Viewport3D() {
         <OrbitControls
           ref={controls}
           makeDefault
+          enabled={!walking}
           enableDamping
           dampingFactor={0.09}
           rotateSpeed={0.72}
@@ -75,6 +88,7 @@ export function Viewport3D() {
           touches={{ ONE: TOUCH.ROTATE, TWO: TOUCH.DOLLY_PAN }}
         />
         <CameraRig controls={controls} />
+        {walking ? <WalkController /> : null}
       </Canvas>
     </div>
   );

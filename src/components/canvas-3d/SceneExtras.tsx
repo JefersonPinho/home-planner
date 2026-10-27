@@ -3,6 +3,7 @@
 import { useEffect, useMemo } from "react";
 import * as THREE from "three";
 import { presentRooms, type PresentedRoom } from "@/features/rooms/present";
+import { tryPlaceSpawn } from "@/features/walk/enter";
 import { useEditorStore } from "@/stores/editor-store";
 import { useProjectStore } from "@/stores/project-store";
 
@@ -33,6 +34,8 @@ function RoomFloor({ room }: { room: PresentedRoom }) {
       receiveShadow
       onClick={(event) => {
         event.stopPropagation();
+        if (tryPlaceSpawn(event.point.x, event.point.z)) return;
+        if (useEditorStore.getState().mode === "walk") return;
         useEditorStore.getState().setSelection({ type: "room", id: room.id });
       }}
     >

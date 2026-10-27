@@ -54,32 +54,40 @@ export function TopBar() {
           if (event.key === "Enter") event.currentTarget.blur();
         }}
       />
-      <div className="flex h-8 border border-neutral-300">
-        <button type="button" className={`px-2.5 text-[13px] ${mode === "2d" ? "bg-neutral-900 text-white" : ""}`} onClick={() => useEditorStore.getState().setMode("2d")}>
-          2D
-        </button>
-        <button type="button" className={`px-2.5 text-[13px] ${mode === "3d" ? "bg-neutral-900 text-white" : ""}`} onClick={() => useEditorStore.getState().setMode("3d")}>
-          3D
-        </button>
-      </div>
-      <button type="button" className="grid h-8 w-8 place-items-center text-neutral-700 disabled:opacity-30" aria-label="Desfazer" disabled={!canUndo} onClick={() => useProjectStore.getState().undo()}>
-        <Undo2 size={16} />
-      </button>
-      <button type="button" className="grid h-8 w-8 place-items-center text-neutral-700 disabled:opacity-30" aria-label="Refazer" disabled={!canRedo} onClick={() => useProjectStore.getState().redo()}>
-        <Redo2 size={16} />
-      </button>
-      <div className="relative">
-        <button type="button" className="h-8 px-2 text-[13px] text-neutral-700 hover:bg-neutral-100" onClick={() => useEditorStore.getState().setMobileSheet(viewOpen ? null : "view")}>
-          Vista
-        </button>
-        {viewOpen ? <ViewMenu onClose={() => useEditorStore.getState().setMobileSheet(null)} /> : null}
-      </div>
-      <button type="button" className="grid h-8 w-8 place-items-center text-neutral-700" aria-label="Enquadrar casa" title="Enquadrar casa" onClick={frameProject}>
-        <Scan size={16} />
-      </button>
-      <button type="button" className="grid h-8 w-8 place-items-center text-neutral-700" aria-label="Focar seleção" onClick={focusSelection}>
-        <Focus size={16} />
-      </button>
+      {mode === "walk" ? (
+        <p className="text-[13px] text-neutral-500">Passear</p>
+      ) : (
+        <div className="flex h-8 border border-neutral-300">
+          <button type="button" className={`px-2.5 text-[13px] ${mode === "2d" ? "bg-neutral-900 text-white" : ""}`} onClick={() => useEditorStore.getState().setMode("2d")}>
+            2D
+          </button>
+          <button type="button" className={`px-2.5 text-[13px] ${mode === "3d" ? "bg-neutral-900 text-white" : ""}`} onClick={() => useEditorStore.getState().setMode("3d")}>
+            3D
+          </button>
+        </div>
+      )}
+      {mode === "walk" ? null : (
+        <>
+          <button type="button" className="grid h-8 w-8 place-items-center text-neutral-700 disabled:opacity-30" aria-label="Desfazer" disabled={!canUndo} onClick={() => useProjectStore.getState().undo()}>
+            <Undo2 size={16} />
+          </button>
+          <button type="button" className="grid h-8 w-8 place-items-center text-neutral-700 disabled:opacity-30" aria-label="Refazer" disabled={!canRedo} onClick={() => useProjectStore.getState().redo()}>
+            <Redo2 size={16} />
+          </button>
+          <div className="relative">
+            <button type="button" className="h-8 px-2 text-[13px] text-neutral-700 hover:bg-neutral-100" onClick={() => useEditorStore.getState().setMobileSheet(viewOpen ? null : "view")}>
+              Vista
+            </button>
+            {viewOpen ? <ViewMenu onClose={() => useEditorStore.getState().setMobileSheet(null)} /> : null}
+          </div>
+          <button type="button" className="grid h-8 w-8 place-items-center text-neutral-700" aria-label="Enquadrar casa" title="Enquadrar casa" onClick={frameProject}>
+            <Scan size={16} />
+          </button>
+          <button type="button" className="grid h-8 w-8 place-items-center text-neutral-700" aria-label="Focar seleção" onClick={focusSelection}>
+            <Focus size={16} />
+          </button>
+        </>
+      )}
       <div className="ml-auto flex min-w-16 items-center justify-end gap-1 pr-1 text-[12px] text-neutral-500">
         {status === "saving" ? (
           <>

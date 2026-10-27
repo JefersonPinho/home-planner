@@ -14,7 +14,7 @@ function isTyping(target: EventTarget | null): boolean {
 export function useEditorHotkeys(): void {
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
-      if (isTyping(event.target)) return;
+      if (isTyping(event.target) || useEditorStore.getState().mode === "walk") return;
       const meta = event.ctrlKey || event.metaKey;
       const key = event.key.toLowerCase();
       if (meta && key === "z" && event.shiftKey) {

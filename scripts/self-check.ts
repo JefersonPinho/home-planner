@@ -6,6 +6,7 @@ import { sceneDocumentSchema } from "../src/lib/validation/scene";
 import { deriveRooms } from "../src/features/rooms/derive-rooms";
 import { snapPoint } from "../src/lib/snapping/snap";
 import { moveFurniture } from "../src/features/furniture/transform";
+import { findSpawn, isWalkable, obstaclePolygons, slide } from "../src/features/walk/motion";
 import { furnitureCollisions } from "../src/lib/collisions/collisions";
 import type { Door, SceneDocument, Wall } from "../src/types/scene";
 
@@ -131,6 +132,29 @@ const placed = { ...document.furniture[0]! };
 moveFurniture(placed, 2.04, 1.56, Math.PI / 10, { enabled: true, grid: 0.1, position: true, rotation: true });
 if (placed.width !== 1.38 || placed.depth !== 1.88 || placed.height !== 0.6 || Math.abs(placed.x - 2) > 0.001 || Math.abs(placed.y - 1.6) > 0.001 || Math.abs(placed.rotation - 0.262) > 0.001) {
   console.error("furniture pose", placed);
+  process.exit(1);
+}
+
+const house: SceneDocument = { ...document, openings: [door] };
+const spawn = findSpawn(house);
+const closed = obstaclePolygons(house, new Map());
+const opened = obstaclePolygons(house, new Map([[door.id, 1.2]]));
+const intoWall = spawn ? slide(spawn, { x: 0, y: -6 }, closed) : null;
+const doorway = { x: 2.25, y: 0 };
+const pastBed = slide({ x: 2, y: 0.35 }, { x: 0, y: 2 }, closed);
+if (
+  !spawn ||
+  spawn.x < 0.3 ||
+  spawn.x > 4.2 ||
+  spawn.y < 0.3 ||
+  spawn.y > 2.9 ||
+  !intoWall ||
+  intoWall.y < 0.28 ||
+  isWalkable(doorway, closed) ||
+  !isWalkable(doorway, opened) ||
+  pastBed.y > 0.85
+) {
+  console.error("walk", { spawn, intoWall, doorwayClosed: isWalkable(doorway, closed), doorwayOpen: isWalkable(doorway, opened), pastBed });
   process.exit(1);
 }
 

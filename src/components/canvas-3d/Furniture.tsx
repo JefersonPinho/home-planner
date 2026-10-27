@@ -44,6 +44,7 @@ export function Furniture() {
 }
 
 function FurniturePiece({ item, selected, colliding }: { item: FurnitureInstance; selected: boolean; colliding: boolean }) {
+  const walking = useEditorStore((state) => state.mode === "walk");
   const controls = useThree((state) => state.controls) as OrbitControlsLike | null;
   const controlsRef = useRef<OrbitControlsLike | null>(null);
   const drag = useRef<{ pointerId: number; offsetX: number; offsetZ: number } | null>(null);
@@ -107,7 +108,7 @@ function FurniturePiece({ item, selected, colliding }: { item: FurnitureInstance
   };
 
   const onFloorDown = (event: ThreeEvent<PointerEvent>) => {
-    if (drag.current) return;
+    if (drag.current || useEditorStore.getState().mode === "walk") return;
     event.stopPropagation();
     const point = event.ray.intersectPlane(FLOOR, FLOOR_HIT);
     if (!point) return;
@@ -158,7 +159,7 @@ function FurniturePiece({ item, selected, colliding }: { item: FurnitureInstance
             <boxGeometry args={[item.width, item.height, item.depth]} />
             <meshBasicMaterial transparent opacity={0} depthWrite={false} />
           </mesh>
-          {selected && colliding ? (
+          {selected && colliding && !walking ? (
             <mesh position={[0, item.height / 2, 0]}>
               <boxGeometry args={[item.width, item.height, item.depth]} />
               <meshBasicMaterial color="#dc2626" wireframe />
@@ -166,7 +167,7 @@ function FurniturePiece({ item, selected, colliding }: { item: FurnitureInstance
           ) : null}
         </group>
       </group>
-      {selected ? (
+      {selected && !walking ? (
         <PivotControls
           matrix={matrix}
           autoTransform={false}

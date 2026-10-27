@@ -25,6 +25,7 @@ export function CameraRig({ controls }: { controls: RefObject<OrbitControlsImpl 
   }, [nonce, camera, controls, size.width, size.height]);
 
   useFrame((state) => {
+    if (useEditorStore.getState().mode === "walk") return;
     if (state.camera.position.y < 0.2) state.camera.position.y = 0.2;
   });
 

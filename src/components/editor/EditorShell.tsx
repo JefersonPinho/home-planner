@@ -10,6 +10,7 @@ import { PropertiesPanel } from "@/components/properties/PropertiesPanel";
 import { MobileBar } from "@/components/toolbar/MobileBar";
 import { ToolRail } from "@/components/toolbar/ToolRail";
 import { TopBar } from "@/components/toolbar/TopBar";
+import { WalkChrome } from "@/components/walk/WalkChrome";
 import { flushProjectSave, useAutosave } from "@/hooks/useAutosave";
 import { getBrowserProject } from "@/lib/browser-projects";
 import { useEditorHotkeys } from "@/hooks/useEditorHotkeys";
@@ -28,6 +29,7 @@ export function EditorShell({ projectId }: { projectId: string }) {
   const [error, setError] = useState("");
   const loaded = useProjectStore((state) => state.loaded && state.projectId === projectId);
   const mode = useEditorStore((state) => state.mode);
+  const walking = mode === "walk";
   const libraryOpen = useEditorStore((state) => state.libraryOpen);
   const sheet = useEditorStore((state) => state.mobileSheet);
   useAutosave();
@@ -73,27 +75,30 @@ export function EditorShell({ projectId }: { projectId: string }) {
     <div className="flex h-dvh flex-col overflow-hidden bg-[#e7e8ec] text-[#111827]">
       <TopBar />
       <div className="flex min-h-0 flex-1">
-        <ToolRail />
-        {libraryOpen ? (
+        {walking ? null : <ToolRail />}
+        {!walking && libraryOpen ? (
           <div className="hidden md:block">
             <LibraryPanel />
           </div>
         ) : null}
         <div className="relative min-w-0 flex-1">
           {mode === "2d" ? <PlanCanvas /> : <Viewport3D />}
-          <ViewCube />
-          <SelectionStrip />
+          {walking ? null : <ViewCube />}
+          {walking ? null : <SelectionStrip />}
+          <WalkChrome />
         </div>
-        <div className="hidden md:block">
-          <PropertiesPanel />
-        </div>
+        {walking ? null : (
+          <div className="hidden md:block">
+            <PropertiesPanel />
+          </div>
+        )}
       </div>
-      {sheet === "library" || sheet === "properties" ? (
+      {!walking && (sheet === "library" || sheet === "properties") ? (
         <div className="fixed inset-x-0 bottom-16 z-30 max-h-[72dvh] overflow-hidden border-t border-neutral-200 bg-white md:hidden">
           {sheet === "library" ? <LibraryPanel onClose={() => useEditorStore.getState().setMobileSheet(null)} /> : <PropertiesPanel />}
         </div>
       ) : null}
-      <MobileBar />
+      {walking ? null : <MobileBar />}
     </div>
   );
 }

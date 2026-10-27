@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useMemo, useRef } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
+import { registerDoorLeaf } from "@/features/walk/session";
 import { extrudeSlabs } from "@/features/walls/extrude";
 import { wallLength } from "@/features/walls/intervals";
 import { pointAlongWall } from "@/lib/geometry/polygon";
@@ -59,7 +60,14 @@ function WallMesh({
   }, [wallMode]);
   useFrame(({ camera }) => {
     const current = material.current;
-    if (!current || wallMode !== "partial") return;
+    if (!current) return;
+    if (useEditorStore.getState().mode === "walk") {
+      current.opacity = 1;
+      current.transparent = false;
+      current.depthWrite = true;
+      return;
+    }
+    if (wallMode !== "partial") return;
     const angle = Math.atan2(wall.b.y - wall.a.y, wall.b.x - wall.a.x);
     const normalX = -Math.sin(angle);
     const normalZ = Math.cos(angle);
@@ -81,6 +89,7 @@ function WallMesh({
         receiveShadow
         onClick={(event) => {
           event.stopPropagation();
+          if (useEditorStore.getState().mode === "walk") return;
           useEditorStore.getState().setSelection({ type: "wall", id: wall.id });
         }}
       >
@@ -120,6 +129,7 @@ function OpeningMesh({ wall, opening }: { wall: Wall; opening: Opening }) {
     <group
       onClick={(event) => {
         event.stopPropagation();
+        if (useEditorStore.getState().mode === "walk") return;
         useEditorStore.getState().setSelection({ type: "opening", id: opening.id });
       }}
     >
@@ -156,9 +166,17 @@ function OpeningMesh({ wall, opening }: { wall: Wall; opening: Opening }) {
 function DoorLeaf({ wall, opening }: { wall: Wall; opening: Extract<Opening, { kind: "door" }> }) {
   const hinge = opening.swing === "left" ? -opening.width / 2 : opening.width / 2;
   const leaf = opening.swing === "left" ? opening.width / 2 : -opening.width / 2;
-  const swing = (opening.flip ? -1 : 1) * (opening.swing === "left" ? 0.7 : -0.7);
+  const swingSign = (opening.flip ? -1 : 1) * (opening.swing === "left" ? 1 : -1);
+  const walking = useEditorStore((state) => state.mode === "walk");
+  const leafGroup = useRef<THREE.Group>(null);
+  useLayoutEffect(() => {
+    const group = leafGroup.current;
+    if (group) group.userData.swingSign = swingSign;
+    registerDoorLeaf(opening.id, group);
+    return () => registerDoorLeaf(opening.id, null);
+  }, [opening.id, swingSign]);
   return (
-    <group position={[hinge, 0, 0]} rotation={[0, swing, 0]}>
+    <group ref={leafGroup} position={[hinge, 0, 0]} rotation={[0, swingSign * (walking ? 0 : 0.7), 0]}>
       <mesh position={[leaf, opening.height / 2 - wall.height / 2, opening.flip ? -wall.thickness / 2 : wall.thickness / 2]}>
         <boxGeometry args={[Math.max(opening.width - 0.04, 0.05), opening.height, 0.04]} />
         <meshStandardMaterial color="#cfc8c0" roughness={0.8} />
